@@ -202,7 +202,7 @@ const TurkishEditor = () => {
             <div
               className="absolute bg-white border rounded-md shadow-lg z-10"
               style={{
-                left: `${cursorPosition.x-330}px`,
+                left: `${cursorPosition.x-630}px`,
                 top: `${cursorPosition.y-60}px`,
               }}
             >
