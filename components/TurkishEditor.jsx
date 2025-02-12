@@ -15,6 +15,7 @@ const TurkishEditor = () => {
   const [socket, setSocket] = useState(null);
   const [currentWord, setCurrentWord] = useState({ text: "", start: 0, end: 0 });
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(0);
+  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const textAreaRef = useRef(null);
   const debounceTimer = useRef(null);
 
@@ -94,6 +95,39 @@ const TurkishEditor = () => {
       setSuggestions([]);
       setShowSuggestions(false);
     }
+    // Update cursor position
+    updateCursorPosition(e);
+  };
+
+  const updateCursorPosition = (e) => {
+    if (textAreaRef.current) {
+      const textarea = textAreaRef.current;
+      const cursorPos = e.target.selectionStart;
+      const textBeforeCursor = content.substring(0, cursorPos);
+      const lines = textBeforeCursor.split('\n');
+      const currentLineNumber = lines.length - 1;
+
+      // Create a temporary span to measure the cursor position
+      const span = document.createElement('span');
+      span.textContent = lines[currentLineNumber];
+      span.style.whiteSpace = 'pre-wrap';
+      span.style.visibility = 'hidden';
+      document.body.appendChild(span);
+
+      // Measure the width of the text before the cursor
+      const textWidth = span.getBoundingClientRect().width;
+      document.body.removeChild(span);
+
+      // Get the textarea's position
+      const textareaRect = textarea.getBoundingClientRect();
+      const lineHeight = parseInt(window.getComputedStyle(textarea).lineHeight, 10);
+
+      // Calculate the cursor's position
+      const x = textareaRect.left + textWidth + 10; // Add a small offset
+      const y = textareaRect.top + (currentLineNumber * lineHeight);
+
+      setCursorPosition({ x, y });
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -165,7 +199,13 @@ const TurkishEditor = () => {
             </div>
           )}
           {showSuggestions && suggestions.length > 0 && (
-            <div className="absolute bg-white border rounded-md shadow-lg mt-2 z-10">
+            <div
+              className="absolute bg-white border rounded-md shadow-lg z-10"
+              style={{
+                left: `${cursorPosition.x-330}px`,
+                top: `${cursorPosition.y-60}px`,
+              }}
+            >
               {suggestions.map((suggestion, index) => (
                 <div
                   key={index}
